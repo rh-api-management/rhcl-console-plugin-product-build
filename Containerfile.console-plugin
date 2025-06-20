@@ -24,6 +24,8 @@ RUN mkdir -p /var/cache/nginx /var/log/nginx /run && \
 
 WORKDIR /usr/src/app
 
+# Copy license
+COPY kuadrant-console-plugin/LICENSE /licenses/LICENSE
 # Copy over the package.json/lock file only 
 COPY kuadrant-console-plugin/package.json kuadrant-console-plugin/yarn.lock ./
 
@@ -56,6 +58,7 @@ RUN test -f /usr/share/nginx/html/plugin-manifest.json && \
 FROM registry.redhat.io/ubi9/nginx-126:latest AS runner
 
 COPY --from=builder /usr/share/nginx/html/ /usr/share/nginx/html/
+COPY --from=builder licenses/LICENSE /licenses/LICENSE
 
 LABEL version="0.1.1" \
     com.redhat.component="rhcl-console-plugin-container" \
