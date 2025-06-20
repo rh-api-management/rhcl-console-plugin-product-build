@@ -29,6 +29,8 @@ spec:
     value: 5d
   - name: dockerfile
     value: Containerfile.console-plugin
+  - name: prefetch-input
+    value: '[{"type": "rpm", "path": "."}, {"type": "npm", "path": "./yarn-install"}, {"type": "yarn", "path": "./kuadrant-console-plugin"}]'
   pipelineSpec:
     description: |
       This pipeline is ideal for building container images from a Containerfile while maintaining trust after pipeline customization.
@@ -78,7 +80,7 @@ spec:
       description: Skip checks against built image
       name: skip-checks
       type: string
-    - default: "false"
+    - default: "true"
       description: Execute the build with network isolation
       name: hermetic
       type: string
@@ -91,7 +93,7 @@ spec:
         1h, 2d, 3w for hours, days, and weeks, respectively.
       name: image-expires-after
       type: string
-    - default: "false"
+    - default: "true"
       description: Build a source image.
       name: build-source-image
       type: string
@@ -182,6 +184,8 @@ spec:
         value: $(params.output-image).prefetch
       - name: ociArtifactExpiresAfter
         value: $(params.image-expires-after)
+      - name: dev-package-managers 
+        value: "true"
       runAfter:
       - clone-repository
       taskRef:
