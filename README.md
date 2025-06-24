@@ -1,1 +1,1 @@
-Konflux configuration for the RHCL Console plugin
+Konflux configuration for the RHCL Console plugin component.
