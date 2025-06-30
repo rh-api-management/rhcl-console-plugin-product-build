@@ -3,7 +3,7 @@ contentOrigin:
     - ./ubi.repo
     - ./redhat.repo
 context:
-  containerfile: Containerfile.console-plugin
+  image: registry.redhat.io/ubi9/ubi:latest
 packages:
   - cargo
   - jq
