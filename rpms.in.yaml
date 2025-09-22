@@ -11,3 +11,4 @@ packages:
   - nginx
   - nginx-core
   - nginx-filesystem
+arches: [x86_64, aarch64]
