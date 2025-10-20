@@ -1,3 +1,6 @@
 [submodule "kuadrant-console-plugin"]
 	path = kuadrant-console-plugin
 	url = https://github.com/kuadrant/kuadrant-console-plugin
+[submodule "console-plugin-0.1.5"]
+	path = console-plugin-0.1.5
+	url = https://github.com/kuadrant/kuadrant-console-plugin
