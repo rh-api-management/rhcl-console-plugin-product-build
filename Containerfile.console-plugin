@@ -24,12 +24,11 @@ COPY kuadrant-console-plugin/LICENSE /licenses/LICENSE
 # Copy over the package.json/lock file only 
 COPY kuadrant-console-plugin/package.json kuadrant-console-plugin/yarn.lock kuadrant-console-plugin/.yarnrc.yml ./
 
-# Cleaning up dependencies
-RUN yarn clean
-RUN rm -rf ./node_modules
-
-# Tell yarn to fetch dependencies from /cachi2/output/deps/yarn-classic/
-RUN yarn install --immutable --offline
+# Validate a project when using Zero-Installs
+#   $ yarn install --immutable --immutable-cache
+# Validate a project when using Zero-Installs (slightly safer if you accept external PRs)
+#   $ yarn install --immutable --immutable-cache --check-cache
+RUN yarn install --immutable --immutable-cache --check-cache
 
 # Copy the rest of the contents from upstream repo to container
 COPY kuadrant-console-plugin/ .
