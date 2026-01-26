@@ -2,22 +2,17 @@ FROM registry.redhat.io/ubi9/nodejs-22:latest AS builder
 
 USER root
 
-RUN dnf install -y nginx npm
+RUN dnf install -y nginx
 
-WORKDIR /src/yarn
+# Enable corepack for Yarn v4 support
+RUN npm install -g corepack && \
+    corepack enable
 
-COPY yarn-install .
-    
-# Install yarn
-RUN npm install --offline && \
-    ln -s $PWD/node_modules/yarn/bin/yarn /usr/local/bin/yarn && \
-    \
-    # Show node and yarn versions
-    echo "Currently running: " node --version && \
-    echo "Currently running: " yarn --version
+# Show node and yarn versions
+RUN echo "Currently running node: $(node --version)" && \
+    echo "Currently running yarn: $(yarn --version)"
 
-RUN yarn config set network-concurrency 1 && \
-    yarn config set network-timeout 100000
+RUN yarn config set --home enableGlobalCache true
 
 RUN mkdir -p /var/cache/nginx /var/log/nginx /run && \
     chmod -R 777 /var/cache/nginx /var/log/nginx /run /usr/share/nginx/html/
@@ -27,14 +22,14 @@ WORKDIR /usr/src/app
 # Copy license
 COPY kuadrant-console-plugin/LICENSE /licenses/LICENSE
 # Copy over the package.json/lock file only 
-COPY kuadrant-console-plugin/package.json kuadrant-console-plugin/yarn.lock ./
+COPY kuadrant-console-plugin/package.json kuadrant-console-plugin/yarn.lock kuadrant-console-plugin/.yarnrc.yml ./
 
 # Cleaning up dependencies
 RUN yarn clean
 RUN rm -rf ./node_modules
 
 # Tell yarn to fetch dependencies from /cachi2/output/deps/yarn-classic/
-RUN yarn install --offline
+RUN yarn install --immutable --offline
 
 # Copy the rest of the contents from upstream repo to container
 COPY kuadrant-console-plugin/ .
