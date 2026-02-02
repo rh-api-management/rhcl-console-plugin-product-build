@@ -4,20 +4,16 @@ USER root
 
 RUN dnf install -y nginx
 
-# Enable corepack for Yarn v4 support
-RUN npm install -g corepack && \
-    corepack enable
+RUN mkdir -p /var/cache/nginx /var/log/nginx /run && \
+    chmod -R 777 /var/cache/nginx /var/log/nginx /run /usr/share/nginx/html/
+
+WORKDIR /usr/src/app
 
 # Show node and yarn versions
 RUN echo "Currently running node: $(node --version)" && \
     echo "Currently running yarn: $(yarn --version)"
 
 RUN yarn config set --home enableGlobalCache true
-
-RUN mkdir -p /var/cache/nginx /var/log/nginx /run && \
-    chmod -R 777 /var/cache/nginx /var/log/nginx /run /usr/share/nginx/html/
-
-WORKDIR /usr/src/app
 
 # Copy license
 COPY kuadrant-console-plugin/LICENSE /licenses/LICENSE

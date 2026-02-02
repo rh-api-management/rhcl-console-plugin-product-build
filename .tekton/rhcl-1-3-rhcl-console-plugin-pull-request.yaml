@@ -29,7 +29,7 @@ spec:
   - name: dockerfile
     value: Containerfile.console-plugin
   - name: prefetch-input
-    value: '[{"type": "rpm", "path": "."}, {"type": "npm", "path": "./yarn-install"}, {"type": "yarn", "path": "./kuadrant-console-plugin"}]'
+    value: '[{"type": "rpm", "path": "."}, {"type": "yarn", "path": "/usr/src/app"}]'
   pipelineRef:
     name: build-pipeline
   taskRunTemplate:
