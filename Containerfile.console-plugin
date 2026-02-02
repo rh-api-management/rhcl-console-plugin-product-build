@@ -20,8 +20,6 @@ RUN npm install -g /cachi2/output/deps/npm/"$YARN_PKG"
 RUN echo "Currently running node: $(node --version)" && \
     echo "Currently running yarn: $(yarn --version)"
 
-RUN yarn config set --home enableGlobalCache true
-
 WORKDIR /usr/src/app
 
 # Copy license
