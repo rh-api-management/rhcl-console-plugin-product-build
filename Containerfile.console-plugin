@@ -1,5 +1,7 @@
 FROM registry.redhat.io/ubi9/nodejs-22:latest AS builder
 
+ARG YARN_PKG=yarnpkg-cli-dist-4.12.0.tgz
+
 USER root
 
 RUN dnf install -y nginx
@@ -7,13 +9,20 @@ RUN dnf install -y nginx
 RUN mkdir -p /var/cache/nginx /var/log/nginx /run && \
     chmod -R 777 /var/cache/nginx /var/log/nginx /run /usr/share/nginx/html/
 
-WORKDIR /usr/src/app
+# Install Yarn V4
+WORKDIR /src/yarn
+
+COPY yarn-install .
+
+RUN npm install -g /cachi2/output/deps/npm/"$YARN_PKG"
 
 # Show node and yarn versions
 RUN echo "Currently running node: $(node --version)" && \
     echo "Currently running yarn: $(yarn --version)"
 
 RUN yarn config set --home enableGlobalCache true
+
+WORKDIR /usr/src/app
 
 # Copy license
 COPY kuadrant-console-plugin/LICENSE /licenses/LICENSE
