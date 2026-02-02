@@ -20,6 +20,8 @@ RUN npm install -g /cachi2/output/deps/npm/"$YARN_PKG"
 RUN echo "Currently running node: $(node --version)" && \
     echo "Currently running yarn: $(yarn --version)"
 
+RUN yarn config
+
 WORKDIR /usr/src/app
 
 # Copy license
@@ -31,7 +33,7 @@ COPY kuadrant-console-plugin/package.json kuadrant-console-plugin/yarn.lock kuad
 #   $ yarn install --immutable --immutable-cache
 # Validate a project when using Zero-Installs (slightly safer if you accept external PRs)
 #   $ yarn install --immutable --immutable-cache --check-cache
-RUN yarn install --immutable --immutable-cache
+RUN yarn install --immutable
 
 # Copy the rest of the contents from upstream repo to container
 COPY kuadrant-console-plugin/ .
