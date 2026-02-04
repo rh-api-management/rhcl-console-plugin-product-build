@@ -18,6 +18,9 @@ RUN ls -al /cachi2/output/deps
 RUN ls -al /cachi2/output/deps/rpm
 RUN ls -al /cachi2/output/deps/npm/
 RUN ls -al /cachi2/output/deps/yarn/
+RUN ls -al /cachi2/output/deps/yarn/cache
+RUN ls -al /cachi2/output/deps/yarn/index
+RUN ls -alR /cachi2/output/deps/yarn
 
 RUN if [[ -d /cachi2/output/deps/npm/ ]]; then \
       npm install -g /cachi2/output/deps/npm/"$YARNPKG_CLI"; \
