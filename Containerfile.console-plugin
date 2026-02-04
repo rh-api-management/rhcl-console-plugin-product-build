@@ -14,6 +14,10 @@ WORKDIR /src/yarn
 
 COPY yarn-install .
 
+RUN ls -al /cachi2/output/deps/npm/
+RUN ls -al /cachi2/output/deps
+RUN ls -al /cachi2/output/deps/rpm
+
 RUN if [[ -d /cachi2/output/deps/npm/ ]]; then \
       npm install -g /cachi2/output/deps/npm/"$YARNPKG_CLI"; \
       YARN_ENABLE_NETWORK=0; \
