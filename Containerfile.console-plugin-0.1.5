@@ -6,7 +6,7 @@ RUN dnf install -y nginx npm
 
 WORKDIR /src/yarn
 
-COPY yarn-install .
+COPY yarn-v1-install .
     
 # Install yarn
 RUN npm install --offline && \
