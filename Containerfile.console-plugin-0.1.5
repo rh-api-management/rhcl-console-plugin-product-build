@@ -1,40 +1,40 @@
 FROM registry.redhat.io/ubi9/nodejs-22:latest AS builder
 
+ARG YARNPKG_CLI=yarnpkg-cli-dist-4.12.0.tgz
+
 USER root
 
-RUN dnf install -y nginx npm
-
-WORKDIR /src/yarn
-
-COPY yarn-v1-install .
-    
-# Install yarn
-RUN npm install --offline && \
-    ln -s $PWD/node_modules/yarn/bin/yarn /usr/local/bin/yarn && \
-    \
-    # Show node and yarn versions
-    echo "Currently running: " node --version && \
-    echo "Currently running: " yarn --version
-
-RUN yarn config set network-concurrency 1 && \
-    yarn config set network-timeout 100000
+RUN dnf install -y nginx
 
 RUN mkdir -p /var/cache/nginx /var/log/nginx /run && \
     chmod -R 777 /var/cache/nginx /var/log/nginx /run /usr/share/nginx/html/
+
+# Install Yarn V4
+WORKDIR /src/yarn
+
+COPY yarn-v1-install .
+
+RUN if [[ -d /cachi2/output/deps/npm/ ]]; then \
+      npm install -g /cachi2/output/deps/npm/"$YARNPKG_CLI"; \
+      YARN_ENABLE_NETWORK=0; \
+    else \
+      npm install -g corepack; \
+      corepack enable ;\
+      corepack prepare yarn@4.12.0 --activate;  \
+    fi
+
+# Show node and yarn versions
+RUN echo "Currently running node: $(node --version)" && \
+    echo "Currently running yarn: $(yarn --version)"
 
 WORKDIR /usr/src/app
 
 # Copy license
 COPY console-plugin-0.1.5/LICENSE /licenses/LICENSE
 # Copy over the package.json/lock file only 
-COPY console-plugin-0.1.5/package.json console-plugin-0.1.5/yarn.lock ./
+COPY console-plugin-0.1.5/package.json console-plugin-0.1.5/yarn.lock console-plugin-0.1.5/.yarnrc.yml ./
 
-# Cleaning up dependencies
-RUN yarn clean
-RUN rm -rf ./node_modules
-
-# Tell yarn to fetch dependencies from /cachi2/output/deps/yarn-classic/
-RUN yarn install --offline
+RUN yarn install --immutable
 
 # Copy the rest of the contents from upstream repo to container
 COPY console-plugin-0.1.5/ .
