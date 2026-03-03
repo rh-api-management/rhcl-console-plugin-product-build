@@ -4,3 +4,4 @@
 [submodule "console-plugin-0.1.5"]
 	path = console-plugin-0.1.5
 	url = https://github.com/kuadrant/kuadrant-console-plugin
+	branch = release-v0.1.5
