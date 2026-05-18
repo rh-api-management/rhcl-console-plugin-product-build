@@ -1,0 +1,118 @@
+name: Submodule Version Bump
+
+on:
+  schedule:
+    # Run daily at 6:00 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  check-and-bump-version:
+    runs-on: ubuntu-latest
+    # Only run on the default branch
+    if: github.ref_name == github.event.repository.default_branch
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Check and update kuadrant-console-plugin
+        id: update
+        run: |
+          cd kuadrant-console-plugin
+          git fetch --tags origin
+
+          # Get current tag
+          CURRENT_TAG=$(git describe --tags --exact-match 2>/dev/null || echo "")
+          if [ -z "$CURRENT_TAG" ]; then
+            # If not on a tag, get the closest tag
+            CURRENT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          fi
+          echo "Current version: $CURRENT_TAG"
+
+          # Get latest semver tag
+          LATEST_TAG=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' | sort -V | tail -n 1)
+          echo "Latest version: $LATEST_TAG"
+
+          # Compare versions using sort
+          if [ "$(printf '%s\n' "$CURRENT_TAG" "$LATEST_TAG" | sort -V | tail -n1)" != "$CURRENT_TAG" ]; then
+            echo "Update needed: $CURRENT_TAG -> $LATEST_TAG"
+
+            # Checkout new tag
+            git checkout "$LATEST_TAG"
+            cd ..
+
+            # Update VERSION ARG in Containerfile (this sets both version and release labels)
+            VERSION_NUM=${LATEST_TAG#v}
+            sed -i "s/^ARG VERSION=.*/ARG VERSION=$VERSION_NUM/" Containerfile.console-plugin
+
+            echo "Updated Containerfile VERSION to $VERSION_NUM"
+
+            # Set outputs
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "current_tag=$CURRENT_TAG" >> $GITHUB_OUTPUT
+            echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          else
+            echo "No update needed: already at $CURRENT_TAG"
+            cd ..
+
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "current_tag=$CURRENT_TAG" >> $GITHUB_OUTPUT
+            echo "latest_tag=$CURRENT_TAG" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.update.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            Bump kuadrant-console-plugin to ${{ steps.update.outputs.latest_tag }}
+
+            This automated update bumps the kuadrant-console-plugin submodule to ${{ steps.update.outputs.latest_tag }}
+            and updates the VERSION ARG in the Containerfile.
+
+            Updated files:
+            - kuadrant-console-plugin submodule -> ${{ steps.update.outputs.latest_tag }}
+            - Containerfile.console-plugin VERSION ARG
+          branch: auto/bump-rhcl-console-plugin-${{ steps.update.outputs.latest_tag }}
+          delete-branch: true
+          title: 'chore: Bump kuadrant-console-plugin to ${{ steps.update.outputs.latest_tag }}'
+          body: |
+            ## Summary
+
+            This automated PR bumps the kuadrant-console-plugin submodule from `${{ steps.update.outputs.current_tag }}` to `${{ steps.update.outputs.latest_tag }}`.
+
+            ## Changes
+            - Updated kuadrant-console-plugin submodule to tag ${{ steps.update.outputs.latest_tag }}
+            - Updated VERSION ARG in `Containerfile.console-plugin` (sets both version and release labels)
+
+            ## Testing
+            - [ ] Verify the submodule points to the correct tag
+            - [ ] Check that the Containerfile VERSION ARG matches the submodule tag
+            - [ ] Run build tests to ensure compatibility
+
+            ---
+            🤖 This PR was automatically created by the [submodule-version-bump workflow](.github/workflows/submodule-version-bump.yml)
+          labels: |
+            automated
+            dependencies
+          draft: false
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Version Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Current version: ${{ steps.update.outputs.current_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Latest version: ${{ steps.update.outputs.latest_tag }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.update.outputs.has_changes }}" = "true" ]; then
+            echo "- ✅ PR created with update" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ℹ️ No update needed" >> $GITHUB_STEP_SUMMARY
+          fi
