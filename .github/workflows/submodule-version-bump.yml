@@ -48,11 +48,11 @@ jobs:
             git checkout "$LATEST_TAG"
             cd ..
 
-            # Update VERSION ARG in Containerfile (this sets both version and release labels)
+            # Update VERSION in LABEL in Containerfile
             VERSION_NUM=${LATEST_TAG#v}
-            sed -i "s/^ARG VERSION=.*/ARG VERSION=$VERSION_NUM/" Containerfile.console-plugin
+            sed -i "s/^LABEL version=\"[^\"]*\"/LABEL version=\"$VERSION_NUM\"/" Containerfile.console-plugin
 
-            echo "Updated Containerfile VERSION to $VERSION_NUM"
+            echo "Updated Containerfile LABEL version to $VERSION_NUM"
 
             # Set outputs
             echo "has_changes=true" >> $GITHUB_OUTPUT
@@ -76,11 +76,11 @@ jobs:
             Bump kuadrant-console-plugin to ${{ steps.update.outputs.latest_tag }}
 
             This automated update bumps the kuadrant-console-plugin submodule to ${{ steps.update.outputs.latest_tag }}
-            and updates the VERSION ARG in the Containerfile.
+            and updates the version LABEL in the Containerfile.
 
             Updated files:
             - kuadrant-console-plugin submodule -> ${{ steps.update.outputs.latest_tag }}
-            - Containerfile.console-plugin VERSION ARG
+            - Containerfile.console-plugin version LABEL
           branch: auto/bump-rhcl-console-plugin-${{ steps.update.outputs.latest_tag }}
           delete-branch: true
           title: 'chore: Bump kuadrant-console-plugin to ${{ steps.update.outputs.latest_tag }}'
@@ -91,11 +91,11 @@ jobs:
 
             ## Changes
             - Updated kuadrant-console-plugin submodule to tag ${{ steps.update.outputs.latest_tag }}
-            - Updated VERSION ARG in `Containerfile.console-plugin` (sets both version and release labels)
+            - Updated version LABEL in `Containerfile.console-plugin`
 
             ## Testing
             - [ ] Verify the submodule points to the correct tag
-            - [ ] Check that the Containerfile VERSION ARG matches the submodule tag
+            - [ ] Check that the Containerfile version LABEL matches the submodule tag
             - [ ] Run build tests to ensure compatibility
 
             ---
