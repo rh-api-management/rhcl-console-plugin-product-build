@@ -64,7 +64,7 @@ FROM registry.redhat.io/ubi9/nginx-126:latest AS runner
 COPY --from=builder /usr/share/nginx/html/ /usr/share/nginx/html/
 COPY --from=builder licenses/LICENSE /licenses/LICENSE
 
-LABEL version="0.3.6" \
+LABEL version="0.3.7" \
       com.redhat.component="rhcl-console-plugin-container" \
       name="rhcl-1/rhcl-console-plugin-rhel9" \
       cpe="cpe:/a:redhat:connectivity_link:1::el9" \
