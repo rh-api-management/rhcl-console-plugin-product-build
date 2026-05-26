@@ -7,13 +7,13 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "rhcl-1.3"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "rhcl-1.4"
   creationTimestamp:
   labels:
-    appstudio.openshift.io/application: rhcl-1-3-rhcl-operator
-    appstudio.openshift.io/component: rhcl-1-3-rhcl-console-plugin-0-1-5
+    appstudio.openshift.io/application: rhcl-1-4-rhcl-operator
+    appstudio.openshift.io/component: rhcl-1-4-rhcl-console-plugin
     pipelines.appstudio.openshift.io/type: build
-  name: rhcl-1-3-rhcl-console-plugin-0-1-5-on-push
+  name: rhcl-1-4-rhcl-console-plugin-on-push
   namespace: api-management-tenant
 spec:
   params:
@@ -22,15 +22,15 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/api-management-tenant/rhcl-1-3-rhcl-console-plugin-0-1-5:{{revision}}
+    value: quay.io/redhat-user-workloads/api-management-tenant/rhcl-1-4-rhcl-console-plugin:{{revision}}
   - name: dockerfile
-    value: Containerfile.console-plugin-0.1.5
+    value: Containerfile.console-plugin
   - name: prefetch-input
-    value: '[{"type": "rpm", "path": "."}, {"type": "npm", "path": "./yarn-v1-install"}, {"type": "yarn", "path": "./console-plugin-0.1.5"}]'
+    value: '[{"type": "rpm", "path": "."}, {"type": "npm", "path": "./yarn-install"}, {"type": "yarn", "path": "./kuadrant-console-plugin"}]'
   pipelineRef:
     name: build-pipeline
   taskRunTemplate:
-    serviceAccountName: build-pipeline-rhcl-1-3-rhcl-console-plugin-0-1-5
+    serviceAccountName: build-pipeline-rhcl-1-4-rhcl-console-plugin
   workspaces:
   - name: git-auth
     secret:
