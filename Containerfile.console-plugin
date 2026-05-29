@@ -31,8 +31,10 @@ WORKDIR /usr/src/app
 
 # Copy license
 COPY kuadrant-console-plugin/LICENSE /licenses/LICENSE
-# Copy over the package.json/lock file only 
-COPY kuadrant-console-plugin/package.json kuadrant-console-plugin/yarn.lock kuadrant-console-plugin/.yarnrc.yml ./
+# Copy over the package.json/lock file only
+COPY kuadrant-console-plugin/package.json kuadrant-console-plugin/yarn.lock ./
+# Use downstream .yarnrc.yml with s390x and ppc64le support
+COPY .yarnrc.yml ./
 
 # Validate a project when using Zero-Installs
 #   $ yarn install --immutable --immutable-cache
