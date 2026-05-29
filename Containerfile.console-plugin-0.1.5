@@ -31,8 +31,10 @@ WORKDIR /usr/src/app
 
 # Copy license
 COPY console-plugin-0.1.5/LICENSE /licenses/LICENSE
-# Copy over the package.json/lock file only 
-COPY console-plugin-0.1.5/package.json console-plugin-0.1.5/yarn.lock console-plugin-0.1.5/.yarnrc.yml ./
+# Copy over the package.json/lock file only
+COPY console-plugin-0.1.5/package.json console-plugin-0.1.5/yarn.lock ./
+# Use downstream .yarnrc.yml with s390x and ppc64le support
+COPY .yarnrc.yml ./
 
 RUN yarn install --immutable
 
