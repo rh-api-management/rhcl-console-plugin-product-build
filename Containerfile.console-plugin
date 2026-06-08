@@ -47,7 +47,7 @@ RUN node -e " \
   }); \
   require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');"
 
-RUN yarn install --immutable
+RUN yarn install
 
 # Copy the rest of the contents from upstream repo to container
 COPY kuadrant-console-plugin/ .
