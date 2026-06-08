@@ -36,10 +36,17 @@ COPY kuadrant-console-plugin/package.json kuadrant-console-plugin/yarn.lock ./
 # Use downstream .yarnrc.yml with s390x and ppc64le support
 COPY .yarnrc.yml ./
 
-# Validate a project when using Zero-Installs
-#   $ yarn install --immutable --immutable-cache
-# Validate a project when using Zero-Installs (slightly safer if you accept external PRs)
-#   $ yarn install --immutable --immutable-cache --check-cache
+# Skip native tree-sitter builds — this browser plugin uses the WASM fallback
+# (web-tree-sitter) at runtime, and node-gyp cannot compile in hermetic mode
+RUN node -e " \
+  const pkg = JSON.parse(require('fs').readFileSync('package.json', 'utf8')); \
+  pkg.dependenciesMeta = Object.assign(pkg.dependenciesMeta || {}, { \
+    'tree-sitter': { built: false }, \
+    'tree-sitter-json': { built: false }, \
+    '@tree-sitter-grammars/tree-sitter-yaml': { built: false } \
+  }); \
+  require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');"
+
 RUN yarn install --immutable
 
 # Copy the rest of the contents from upstream repo to container
