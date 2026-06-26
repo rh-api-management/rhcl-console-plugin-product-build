@@ -1,13 +1,17 @@
-FROM registry.redhat.io/ubi9/nodejs-22:latest AS builder
-
-ARG YARNPKG_CLI=yarnpkg-cli-dist-4.12.0.tgz
+FROM registry.redhat.io/ubi9/nodejs-22:latest AS base
 
 USER root
 
 RUN dnf install -y nginx
 
-RUN mkdir -p /var/cache/nginx /var/log/nginx /run && \
-    chmod -R 777 /var/cache/nginx /var/log/nginx /run /usr/share/nginx/html/
+
+FROM base as builder
+
+USER root
+
+ARG YARNPKG_CLI=yarnpkg-cli-dist-4.12.0.tgz
+
+RUN mkdir -p /var/cache/nginx /var/log/nginx /run
 
 # Install Yarn V4
 WORKDIR /src/yarn
