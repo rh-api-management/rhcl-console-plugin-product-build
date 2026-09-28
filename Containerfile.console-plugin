@@ -70,14 +70,19 @@ WORKDIR /usr/src/app
 COPY kuadrant-console-plugin/go.mod ./
 COPY kuadrant-console-plugin/cmd/plugin-server ./cmd/plugin-server
 
-# Pin to the toolchain shipped in the image and disable module downloads so the
-# build cannot reach the network (hermetic).
-ENV GOTOOLCHAIN=local GOPROXY=off CGO_ENABLED=0
+# CGO_ENABLED=1 makes the RHEL go-toolset compiler back Go crypto with the
+# certified OpenSSL module (FIPS-capable: uses FIPS crypto when the host is in
+# FIPS mode, still runs on non-FIPS hosts). GOTOOLCHAIN=local + GOPROXY=off pin
+# to the toolchain shipped in the image and keep the build hermetic.
+ENV GOTOOLCHAIN=local GOPROXY=off CGO_ENABLED=1
 RUN go build -trimpath -ldflags="-s -w" -o /plugin-server ./cmd/plugin-server
 
 # Stage 3: Runtime image
 FROM registry.redhat.io/ubi9/ubi-minimal:latest AS runner
 
+# plugin-server is built with CGO_ENABLED=1 and dlopens libcrypto at runtime for
+# the certified crypto module; ubi-minimal already ships openssl-libs, so no
+# extra package install is needed.
 RUN mkdir -p /usr/share/kuadrant-console-plugin && \
     chown -R root:0 /usr/share/kuadrant-console-plugin && \
     chmod -R g+rX /usr/share/kuadrant-console-plugin
