@@ -60,22 +60,33 @@ RUN test -f ./dist/plugin-manifest.json && \
     echo "All required files are present."
 
 # Stage 2: Build the plugin-server (static asset server + MCP relay).
-# The Go module has no external dependencies (standard library only, no go.sum),
-# so the build is fully hermetic and needs no gomod prefetch.
+# The Go module is stdlib-only today, but the .tekton prefetch config declares a
+# gomod input so a hermetic build still works if dependencies are added later.
 FROM registry.redhat.io/ubi9/go-toolset:latest AS go-builder
 
 USER root
 WORKDIR /usr/src/app
 
-COPY kuadrant-console-plugin/go.mod ./
+# go.su[m] is an optional match: copied only once a go.sum exists (i.e. once the
+# module gains dependencies); go.mod always matches so the COPY never fails.
+COPY kuadrant-console-plugin/go.mod kuadrant-console-plugin/go.su[m] ./
 COPY kuadrant-console-plugin/cmd/plugin-server ./cmd/plugin-server
 
 # CGO_ENABLED=1 makes the RHEL go-toolset compiler back Go crypto with the
 # certified OpenSSL module (FIPS-capable: uses FIPS crypto when the host is in
-# FIPS mode, still runs on non-FIPS hosts). GOTOOLCHAIN=local + GOPROXY=off pin
-# to the toolchain shipped in the image and keep the build hermetic.
-ENV GOTOOLCHAIN=local GOPROXY=off CGO_ENABLED=1
-RUN go build -trimpath -ldflags="-s -w" -o /plugin-server ./cmd/plugin-server
+# FIPS mode, still runs on non-FIPS hosts). GOTOOLCHAIN=local pins to the
+# toolchain shipped in the image.
+ENV GOTOOLCHAIN=local CGO_ENABLED=1
+# In a hermetic Konflux build cachi2 prefetches gomod dependencies and exposes
+# them via /cachi2/output/cachi2.env (which points GOPROXY at the local module
+# cache); source it so the build consumes them. Outside cachi2 (local/dev
+# builds) fall back to GOPROXY=off so the build stays offline.
+RUN if [ -f /cachi2/output/cachi2.env ]; then \
+      . /cachi2/output/cachi2.env; \
+    else \
+      export GOPROXY=off; \
+    fi && \
+    go build -trimpath -ldflags="-s -w" -o /plugin-server ./cmd/plugin-server
 
 # Stage 3: Runtime image
 FROM registry.redhat.io/ubi9/ubi-minimal:latest AS runner
