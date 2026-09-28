@@ -7,7 +7,7 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "rhcl-1.5"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "rhcl-1.5" && ("kuadrant-console-plugin".pathChanged() || "kuadrant-console-plugin/*".pathChanged() || "Containerfile.console-plugin".pathChanged() || "yarn-install/*".pathChanged() || ".yarnrc.yml".pathChanged() || "rpms.in.yaml".pathChanged() || "rpms.lock.yaml".pathChanged() || "redhat.repo".pathChanged() || "ubi.repo".pathChanged() || ".tekton/multi-arch-build-pipeline.yaml".pathChanged() || ".tekton/rhcl-1-5-rhcl-console-plugin-push.yaml".pathChanged())
   creationTimestamp:
   labels:
     appstudio.openshift.io/application: rhcl-1-5-rhcl-operator
