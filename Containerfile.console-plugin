@@ -33,6 +33,9 @@ WORKDIR /usr/src/app
 COPY kuadrant-console-plugin/LICENSE /licenses/LICENSE
 # Copy over the package.json/lock file only
 COPY kuadrant-console-plugin/package.json kuadrant-console-plugin/yarn.lock ./
+# Copy Yarn patch files referenced by the lockfile so `yarn install` can apply
+# them (e.g. the patched @openshift-console/dynamic-plugin-sdk)
+COPY kuadrant-console-plugin/.yarn/patches/ ./.yarn/patches/
 # Use downstream .yarnrc.yml with s390x and ppc64le support
 COPY .yarnrc.yml ./
 
