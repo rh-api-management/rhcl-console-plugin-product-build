@@ -62,6 +62,12 @@ FROM registry.redhat.io/ubi9/nginx-126:latest AS runner
 COPY --from=builder /usr/share/nginx/html/ /usr/share/nginx/html/
 COPY --from=builder licenses/LICENSE /licenses/LICENSE
 
+# Set the system-wide crypto policy to DEFAULT:PQ (CONNLINK-1566). The nginx-126
+# base ships update-crypto-policies, so apply it directly in the runtime image
+# (there is no ubi-minimal-pqc equivalent for the nginx base).
+USER root
+RUN update-crypto-policies --set DEFAULT:PQ
+
 LABEL version="0.1.5" \
       com.redhat.component="rhcl-console-plugin-container" \
       name="rhcl-1/rhcl-console-plugin-rhel9" \
