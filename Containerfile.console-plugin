@@ -89,7 +89,9 @@ RUN if [ -f /cachi2/output/cachi2.env ]; then \
     go build -trimpath -ldflags="-s -w" -o /plugin-server ./cmd/plugin-server
 
 # Stage 3: Runtime image
-FROM registry.redhat.io/ubi9/ubi-minimal:latest AS runner
+# Use the RHEL9 PQC variant of ubi-minimal, which ships with the system-wide
+# crypto policy set to DEFAULT:PQ (CONNLINK-1566).
+FROM registry.redhat.io/ubi9/ubi-minimal-pqc:latest AS runner
 
 # plugin-server is built with CGO_ENABLED=1 and dlopens libcrypto at runtime for
 # the certified crypto module; ubi-minimal already ships openssl-libs, so no
